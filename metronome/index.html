@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Metronome</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Responsive web metronome for guitar practice." />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./assets/icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="./assets/icons/icon-512.png" />
+  <link rel="stylesheet" href="./css/reset.css" />
+  <link rel="stylesheet" href="./css/variables.css" />
+  <link rel="stylesheet" href="./css/layout.css" />
+  <link rel="stylesheet" href="./css/components.css" />
+  <link rel="stylesheet" href="./css/responsive.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1 class="app-title">Electro Guitar Practice Lab</h1>
+    <p class="app-subtitle">Tight rhythm, clean picking, rock‑solid timing for electric guitar.</p>
+  </header>
+
+  <main class="app-main" aria-label="Metronome controls">
+    <section class="metronome-main">
+      <div class="visual-and-transport">
+        <div class="visual-container">
+          <figure class="metronome-figure" aria-hidden="true">
+            <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg" role="img">
+              <defs>
+                <linearGradient id="bodyGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#4b5563" />
+                  <stop offset="40%" stop-color="#020617" />
+                  <stop offset="100%" stop-color="#000000" />
+                </linearGradient>
+              </defs>
+              <!-- Base -->
+              <rect x="12" y="130" width="96" height="10" rx="2" fill="#020617" />
+              <rect x="16" y="124" width="88" height="8" rx="2" fill="#111827" />
+              <!-- Body -->
+              <path
+                d="M30 124 L60 16 L90 124 Z"
+                fill="url(#bodyGradient)"
+                stroke="#1f2937"
+                stroke-width="2"
+              />
+              <!-- Scale window -->
+              <rect x="52" y="34" width="16" height="72" rx="3" fill="#111827" stroke="#4b5563" stroke-width="1" />
+              <!-- Scale lines -->
+              <g stroke="#9ca3af" stroke-width="0.6">
+                <line x1="54" y1="40" x2="66" y2="40" />
+                <line x1="54" y1="48" x2="68" y2="48" />
+                <line x1="54" y1="56" x2="66" y2="56" />
+                <line x1="54" y1="64" x2="68" y2="64" />
+                <line x1="54" y1="72" x2="66" y2="72" />
+                <line x1="54" y1="80" x2="68" y2="80" />
+                <line x1="54" y1="88" x2="66" y2="88" />
+                <line x1="54" y1="96" x2="68" y2="96" />
+                <line x1="54" y1="104" x2="66" y2="104" />
+              </g>
+              <!-- Pendulum (grouped for animation, resting vertical) -->
+              <g class="metronome-pendulum">
+                <line x1="60" y1="26" x2="60" y2="94" stroke="#d1d5db" stroke-width="2" />
+                <rect x="54" y="78" width="12" height="12" rx="2" fill="#e5e7eb" stroke="#4b5563" stroke-width="1" />
+              </g>
+              <!-- Top knob -->
+              <circle cx="60" cy="22" r="3" fill="#e5e7eb" />
+            </svg>
+          </figure>
+          <div class="beat-indicator" aria-label="Current beat in bar">
+            <span class="beat-pill" data-beat-index="1">1</span>
+            <span class="beat-pill" data-beat-index="2">2</span>
+            <span class="beat-pill" data-beat-index="3">3</span>
+            <span class="beat-pill" data-beat-index="4">4</span>
+          </div>
+        </div>
+
+        <div class="transport-controls">
+          <button
+            type="button"
+            class="btn primary"
+            id="startStopBtn"
+            aria-pressed="false"
+          >
+            Start
+          </button>
+
+          <button
+            type="button"
+            class="btn secondary"
+            id="tapTempoBtn"
+            aria-label="Tap tempo"
+          >
+            Tap Tempo
+          </button>
+
+          <div class="practice-timer" aria-label="Practice timer">
+            <label for="timerPresetSelect">Practice timer</label>
+            <div class="timer-row">
+              <select id="timerPresetSelect">
+                <option value="0">Off</option>
+                <option value="300">5 min</option>
+                <option value="600">10 min</option>
+                <option value="900">15 min</option>
+                <option value="1800">30 min</option>
+                <option value="custom">Custom…</option>
+              </select>
+              <input
+                type="number"
+                id="timerCustomMinutes"
+                min="1"
+                max="120"
+                step="1"
+                inputmode="numeric"
+                aria-label="Custom practice duration in minutes"
+                class="timer-custom-input"
+              />
+              <div
+                class="timer-display"
+                id="timerDisplay"
+                aria-label="Remaining practice time"
+              >
+                00:00
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          id="bpmAriaLive"
+          class="visually-hidden"
+          aria-live="polite"
+        ></div>
+      </div>
+
+      <section class="panel bpm-panel" aria-label="Tempo controls">
+        <header class="panel-header">
+          <h2>Tempo</h2>
+          <span class="bpm-display" id="bpmDisplay" aria-label="Current tempo">
+            120
+          </span>
+          <span class="bpm-unit">BPM</span>
+        </header>
+
+        <div class="bpm-controls">
+          <label for="bpmSlider">Tempo slider</label>
+          <input
+            id="bpmSlider"
+            type="range"
+            min="40"
+            max="240"
+            step="1"
+            value="120"
+          />
+
+          <div class="bpm-input-row">
+            <label for="bpmInput" class="bpm-input-label">Exact tempo</label>
+            <input
+              id="bpmInput"
+              type="number"
+              min="40"
+              max="240"
+              step="1"
+              inputmode="numeric"
+              aria-describedby="bpmInputHelp"
+            />
+            <span id="bpmInputHelp" class="field-help">
+              40–240 BPM
+            </span>
+          </div>
+
+          <div class="bpm-step-buttons" aria-label="Quick tempo adjustments">
+            <button type="button" class="btn ghost bpm-step" data-step="-5">-5</button>
+            <button type="button" class="btn ghost bpm-step" data-step="-1">-1</button>
+            <button type="button" class="btn ghost bpm-step" data-step="1">+1</button>
+            <button type="button" class="btn ghost bpm-step" data-step="5">+5</button>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <aside class="metronome-sidebar">
+      <section class="panel" aria-label="Meter and subdivision">
+        <header class="panel-header">
+          <h2>Meter</h2>
+        </header>
+
+        <div class="field-group">
+          <label for="timeSignatureSelect">Time signature</label>
+          <select id="timeSignatureSelect">
+            <option value="2/4">2/4</option>
+            <option value="3/4">3/4</option>
+            <option value="4/4" selected>4/4</option>
+            <option value="6/8">6/8</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <span class="field-label">Subdivision</span>
+          <div class="segmented-control" role="radiogroup" aria-label="Subdivision">
+            <button
+              type="button"
+              class="segmented-option is-active"
+              data-subdivision="quarter"
+              role="radio"
+              aria-checked="true"
+            >
+              Quarter
+            </button>
+            <button
+              type="button"
+              class="segmented-option"
+              data-subdivision="eighth"
+              role="radio"
+              aria-checked="false"
+            >
+              Eighth
+            </button>
+            <button
+              type="button"
+              class="segmented-option"
+              data-subdivision="sixteenth"
+              role="radio"
+              aria-checked="false"
+            >
+              Sixteenth
+            </button>
+          </div>
+        </div>
+
+        <div class="field-group toggle-row">
+          <label for="accentToggle">Accent first beat</label>
+          <input
+            id="accentToggle"
+            type="checkbox"
+            role="switch"
+            aria-checked="true"
+            checked
+          />
+        </div>
+      </section>
+
+      <section class="panel" aria-label="Progressive overload">
+        <header class="panel-header">
+          <h2>Progressive overload</h2>
+        </header>
+
+        <div class="field-group toggle-row">
+          <label for="overloadToggle">Enable</label>
+          <input
+            id="overloadToggle"
+            type="checkbox"
+            role="switch"
+            aria-checked="false"
+          />
+        </div>
+
+        <div class="field-group">
+          <label for="overloadStepInput">Increase BPM by</label>
+          <div class="inline-field">
+            <input
+              id="overloadStepInput"
+              type="number"
+              min="1"
+              max="10"
+              step="1"
+              value="1"
+              inputmode="numeric"
+            />
+            <span class="field-suffix">every</span>
+            <input
+              id="overloadIntervalInput"
+              type="number"
+              min="10"
+              max="300"
+              step="5"
+              value="30"
+              inputmode="numeric"
+            />
+            <span class="field-suffix">sec</span>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="overloadMaxBpmInput">Max BPM</label>
+          <input
+            id="overloadMaxBpmInput"
+            type="number"
+            min="40"
+            max="240"
+            step="1"
+            value="160"
+            inputmode="numeric"
+          />
+        </div>
+
+        <p class="field-help">
+          When enabled, BPM will gradually increase while the metronome is running.
+        </p>
+
+        <div class="overload-status">
+          <span class="field-label">Target BPM</span>
+          <span id="overloadTargetDisplay">120</span>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="app-footer">
+    <p>
+      Spacebar toggles start/stop. All settings are saved locally to your browser.
+      Use it for alternate picking drills, string‑skipping, legato, rhythm chugs and timing workouts.
+    </p>
+    <p>
+      Developed by <strong>cotneo</strong> —
+      <a href="https://www.cotneo.com" target="_blank" rel="noreferrer">www.cotneo.com</a> ·
+      <a href="https://github.com/cotneo" target="_blank" rel="noreferrer">github.com/cotneo</a> ·
+      <a href="mailto:furkanaliakar@gmail.com">furkanaliakar@gmail.com</a>
+    </p>
+  </footer>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
+
