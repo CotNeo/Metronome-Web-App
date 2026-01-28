@@ -144,7 +144,7 @@ Then follow the URL printed in the terminal (usually `http://localhost:3000`).
 5. Save settings. GitHub will build and serve the site at a URL like:
 
    ```text
-   https://<your-username>.github.io/<your-repo-name>/
+   https://cotneo.github.io/metronome-wep-app/
    ```
 
 Because all paths in `index.html` and the manifest are **relative**, the app will work correctly under the GitHub Pages URL without extra configuration.
